@@ -17,7 +17,7 @@ const CheckboxInput = React.memo(({ register, error, name }: InputProps) => {
     <div className="mb-4">
       <label
         className="flex items-center space-x-2 text-gray-700"
-        htmlFor="agree"
+        htmlFor={`checkbox-${name}`}
       >
         <input
           id={`checkbox-${name}`}
@@ -39,8 +39,8 @@ CheckboxInput.displayName = "CheckboxInput";
 const TextInput = React.memo(({ register, error, name }: InputProps) => {
   return (
     <div className="mb-4">
-      <label htmlFor="text" className="mb-1 block text-gray-700">
-        Your text
+      <label htmlFor={`input-${name}`} className="mb-1 block text-gray-700">
+        Name
       </label>
       <input
         id={`input-${name}`}
