@@ -20,10 +20,9 @@ const CheckboxInput = React.memo(({ register, error, name }: InputProps) => {
         htmlFor="agree"
       >
         <input
-          id={``}
+          id={`checkbox-${name}`}
           type="checkbox"
-          // ? Should be dynamic.
-          {...register("agree")}
+          {...register(name)}
           className={clsx(
             "h-4 w-4 rounded border-gray-300 text-blue-600",
             error && "border-red-500",
@@ -37,16 +36,15 @@ const CheckboxInput = React.memo(({ register, error, name }: InputProps) => {
 });
 CheckboxInput.displayName = "CheckboxInput";
 
-const TextInput = React.memo(({ register, error }: InputProps) => {
+const TextInput = React.memo(({ register, error, name }: InputProps) => {
   return (
     <div className="mb-4">
       <label htmlFor="text" className="mb-1 block text-gray-700">
         Your text
       </label>
       <input
-        id="text"
-        // ? Should be dynamic.
-        {...register("text")}
+        id={`input-${name}`}
+        {...register(name)}
         type="text"
         className={clsx(
           "w-full rounded border px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500",
@@ -65,20 +63,17 @@ const createSchema = (minLength: number) =>
     text: z
       .string()
       .min(1, "Text is required")
-      // Here we use the dynamic minLength prop
       .min(minLength, `Text must be at least ${minLength} characters long`)
       .refine(
-        (val) =>
-          // Example: if minLength is high, maybe you also impose a pattern
-          /^.*(?=.{5,})(?=.*[A-Z])(?=.*\d).*$/g.test(val),
+        (val) => /^.*(?=.{5,})(?=.*[A-Z])(?=.*\d).*$/g.test(val),
         `Text must include at least one uppercase letter and one number`,
       ),
   });
 
 export type FormData = z.infer<ReturnType<typeof createSchema>>;
 
-// todo: Try superRefine.
-// todo: Try validation on props.
+// todo: Try superRefine: validate input against other inputs.
+// todo: Try validation input received by props.
 export const FormComponent: React.FC = () => {
   const schema = createSchema(5);
   const methods = useForm<FormData>({
@@ -104,8 +99,16 @@ export const FormComponent: React.FC = () => {
     <div className="mx-auto w-full max-w-md rounded bg-white p-6 shadow">
       <FormProvider {...methods}>
         <form onSubmit={onSubmit}>
-          <CheckboxInput name= register={register} error={errors.agree?.message} />
-          <TextInput register={register} error={errors.text?.message} />
+          <CheckboxInput
+            name={"agree"}
+            register={register}
+            error={errors.agree?.message}
+          />
+          <TextInput
+            name={"text"}
+            register={register}
+            error={errors.text?.message}
+          />
           <button
             type="submit"
             className={clsx(
