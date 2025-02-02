@@ -4,7 +4,13 @@ import React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
-import { FormProvider, useForm, UseFormRegister } from "react-hook-form";
+import {
+  FormProvider,
+  useForm,
+  useFormContext,
+  UseFormRegister,
+  useWatch,
+} from "react-hook-form";
 
 interface InputProps {
   register: UseFormRegister<FormData>;
@@ -57,12 +63,27 @@ const TextInput = React.memo(({ register, error, name }: InputProps) => {
 });
 TextInput.displayName = "TextInput";
 
+const DynamicInput = React.memo(function DynamicInput({
+  register,
+  error,
+  name,
+}: InputProps) {
+  const { control } = useFormContext<FormData>();
+  const agreed = useWatch({
+    control,
+    name: "agree",
+  });
+
+  if (!agreed) return null;
+  return <TextInput name={name} register={register} error={error} />;
+});
+DynamicInput.displayName = "DynamicInput";
+
 const createSchema = (minLength: number) =>
   z.object({
     agree: z.boolean(),
     text: z
       .string()
-      .min(1, "Text is required")
       .min(minLength, `Text must be at least ${minLength} characters long`)
       .refine(
         (val) => /^.*(?=.{5,})(?=.*[A-Z])(?=.*\d).*$/g.test(val),
@@ -73,7 +94,6 @@ const createSchema = (minLength: number) =>
 export type FormData = z.infer<ReturnType<typeof createSchema>>;
 
 // todo: Try superRefine: validate input against other inputs.
-// todo: Try validation input received by props.
 export const FormComponent: React.FC = () => {
   const schema = createSchema(5);
   const methods = useForm<FormData>({
@@ -104,7 +124,7 @@ export const FormComponent: React.FC = () => {
             register={register}
             error={errors.agree?.message}
           />
-          <TextInput
+          <DynamicInput
             name={"text"}
             register={register}
             error={errors.text?.message}
